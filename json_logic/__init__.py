@@ -701,8 +701,11 @@ def _var(data, var_name=None, default=None):
     try:
         for key in text_type(var_name).split('.'):
             try:
-                data = data[key]
-            except TypeError:
+                if _is_dictionary(data):
+                    data = data[key]
+                else:
+                    data = getattr(data, key)
+            except (TypeError, AttributeError):
                 data = data[int(key)]
     except (KeyError, TypeError, ValueError):
         return default
