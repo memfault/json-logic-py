@@ -683,7 +683,7 @@ _scoped_operations = {
 
 # Data operations
 
-def _var(data, var_name=None, default=None):
+def _var(data, var_name=None, default=None, *, use_dot_notation: bool):
     """
     Get variable value from the data object.
     Can also access variable properties (to any depth) via dot-notation:
@@ -699,7 +699,7 @@ def _var(data, var_name=None, default=None):
     if var_name is None or var_name == '':
         return data  # Return the whole data object
     try:
-        for key in text_type(var_name).split('.'):
+        for key in text_type(var_name).split('.') if use_dot_notation else (var_name,):
             try:
                 if _is_dictionary(data):
                     data = data[key]
@@ -713,7 +713,7 @@ def _var(data, var_name=None, default=None):
         return data
 
 
-def _missing(data, *args):
+def _missing(data, *args, use_dot_notation: bool):
     """
     Check if one or more variables are missing from data object.
     Take either:
@@ -732,12 +732,12 @@ def _missing(data, *args):
     missing_array = []
     var_names = args[0] if args and _is_array(args[0]) else args
     for var_name in var_names:
-        if _var(data, var_name) in (None, ""):
+        if _var(data, var_name, use_dot_notation=use_dot_notation) in (None, ""):
             missing_array.append(var_name)
     return missing_array
 
 
-def _missing_some(data, need_count, args):
+def _missing_some(data, need_count, args, *, use_dot_notation: bool):
     """
     Check if at least some of the variables are missing from data object.
     Take two arguments:
@@ -753,7 +753,7 @@ def _missing_some(data, need_count, args):
     In that case all occurrences are counted towards the minimum number of
     variables to be present and may lead to unexpected results.
     """
-    missing_array = _missing(data, args)
+    missing_array = _missing(data, args, use_dot_notation=use_dot_notation)
     if len(args) - len(missing_array) >= need_count:
         return []
     return missing_array
@@ -768,7 +768,7 @@ _data_operations = {
 
 # MAIN LOGIC
 
-def jsonLogic(logic, data=None):
+def jsonLogic(logic, data=None, *, use_dot_notation: bool = True):
     """
     Evaluate provided JsonLogic using given data (if any).
     If a single JsonLogic rule is provided - return a single resulting value.
@@ -808,7 +808,7 @@ def jsonLogic(logic, data=None):
 
     # Apply data retrieval operations
     if operator in _data_operations:
-        return _data_operations[operator](data, *values)
+        return _data_operations[operator](data, *values, use_dot_notation=use_dot_notation)
 
     # Apply simple custom operations (if any)
     if operator in _custom_operations:
