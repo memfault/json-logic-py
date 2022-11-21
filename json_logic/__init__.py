@@ -710,6 +710,27 @@ def _var(data, var_name=None, default=None):
         return data
 
 
+
+def _var_raw(data, var_name=None, default=None):
+    """
+    Get variable from the data object. Unlike _var, this one does not support
+    dot notation and can be used to avoid having to escape keys that have dots
+    in them.
+    """
+    if var_name is None or var_name == '':
+        return data  # Strange, but copy the behavior of _var
+    try:
+        try:
+            data = data[var_name]
+        except TypeError:
+            data = data[int(var_name)]
+    except (KeyError, TypeError, ValueError):
+        return default
+    else:
+        return data
+
+
+
 def _missing(data, *args):
     """
     Check if one or more variables are missing from data object.
@@ -758,6 +779,7 @@ def _missing_some(data, need_count, args):
 
 _data_operations = {
     'var': _var,
+    'var_raw': _var_raw,
     'missing': _missing,
     'missing_some': _missing_some
 }
