@@ -603,6 +603,10 @@ class AdditionalJsonLogicTests(unittest.TestCase):
             ]
         }))
 
+    def test_var_raw(self):
+        self.assertEqual(jsonLogic({'var_raw': 'uses.dot.notation'}, { 'uses.dot.notation': 10 }), 10)
+        self.assertEqual(jsonLogic({'var_raw': ''}, { 'uses.dot.notation': 10 }), { 'uses.dot.notation': 10 })
+
 
 if __name__ == '__main__':
     unittest.main()
